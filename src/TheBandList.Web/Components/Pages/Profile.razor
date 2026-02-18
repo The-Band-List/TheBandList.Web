@@ -1,0 +1,107 @@
+﻿@page "/profil"
+@page "/profile"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+
+<PageTitle>Profile</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        @if (isLoading)
+        {
+            <div class="profil-loading">Chargement…</div>
+        }
+        else if (!string.IsNullOrWhiteSpace(erreur))
+        {
+            <div class="profil-page">
+                <div class="card-profil">
+                    <div class="ligne ligne--full"><div class="alert alert-error">@erreur</div></div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="profil-page">
+                <div class="card-profil">
+                    <img class="avatar" src="@AvatarUrl" alt="avatar discord" />
+
+                    <div class="bloc-infos">
+                        <div class="ligne">
+                            <span class="label">Discord</span>
+                            <span class="value">@DiscordDisplayName</span>
+                        </div>
+
+                        <div class="ligne">
+                            <label class="label" for="nom">Nom affiché</label>
+                            <div class="input-group">
+                                <span class="input-prefix" aria-hidden="true"></span>
+                                <input id="nom"
+                                       class="input"
+                                       value="@Nom"
+                                       @oninput="(e => Nom = e.Value?.ToString() ?? string.Empty)" 
+                                />
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Validation))
+                        {
+                            <div class="ligne ligne--full"><div class="alert alert-error">@Validation</div></div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Succes))
+                        {
+                            <div class="ligne ligne--full"><div class="alert alert-success">@Succes</div></div>
+                        }
+
+                        <div class="ligne actions">
+                            <span class="label"></span>
+                            <button type="button" class="btn" @onclick="EnregistrerNom" disabled="@Saving">
+                                @if (Saving is true)
+                                {
+                                    <span class="spinner" aria-hidden="true"></span>
+                                    <span>Enregistrement…</span>
+                                }
+                                else
+                                {
+                                    <span>Enregistrer</span>
+                                }
+                            </button>
+                            <button type="button" class="btn btn-warning" @onclick="OuvrirPopupFusion">
+                                Fusionner mon compte
+                            </button>
+                            @if (popupFusion is true)
+                            {
+                                <div class="popup-fusion">
+                                    <h3>Demande de fusion</h3>
+
+                                    <p>Indiquez l’ID ou le nom de l'utilisateur à fusionner avec votre compte.</p>
+
+                                    <input class="input" @bind="FusionTarget" placeholder="ID ou nom de l'autre compte" />
+
+                                    <p>Quel nom voulez-vous garder ?</p>
+                                    <select style="height: 80px;" @bind="NomFusionFinal">
+                                        <option value="@Nom">Garder mon nom (@Nom)</option>
+                                        <option value="cible">Garder le nom du compte cible</option>
+                                    </select>
+
+                                    <button class="btn" @onclick="EnvoyerDemandeFusion">Envoyer demande</button>
+                                    <button class="btn btn-danger" @onclick="() => popupFusion = false">Annuler</button>
+
+                                    @if (!string.IsNullOrEmpty(FusionMessage))
+                                    {
+                                        <div class="alert">@FusionMessage</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <div class="profil-page">
+            <a class="btn" href="/login/discord">Se connecter avec Discord</a>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

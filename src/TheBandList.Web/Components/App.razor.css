@@ -1,0 +1,25 @@
+﻿body {
+    margin: 0;
+    background-color: var(--main-background);
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('Font/Roboto.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --main-purple: #881bb6;
+    --nav-bar-secondary: var(--white);
+    --main-background: #23252B;
+    --secondary-background: rgb(var(--secondary-background-value));
+    --secondary-background-value: 54, 56, 59;
+    --black-background-transparent: rgba(12, 12, 12, 0.4);
+    --white: #ffffff;
+}

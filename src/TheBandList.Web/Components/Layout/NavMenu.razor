@@ -1,0 +1,178 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+<CascadingAuthenticationState>
+    <div class="navbar">
+        <a href="/" @onclick="GoToHomePage" @onclick:preventDefault="true" class="logo">
+            <img src="/Pictures/LogoTheBandListComplet.png" />
+        </a>
+
+        <nav @onmouseleave="HandleNavMouseLeave">
+            <a href="/" @onclick="GoToHomePage" class="nav-item @GetSelectedClass("/")" @onclick:preventDefault="true" @onmouseover="@(() => SetHoveredItem("/"))">Liste</a>
+            <a href="/classement" class="nav-item @GetSelectedClass("/classement")" @onmouseover="@(() => SetHoveredItem("/classement"))">Classement</a>
+            <a href="/soumettre-une-reussite" class="nav-item @GetSelectedClass("/soumettre-une-reussite")" @onmouseover="@(() => SetHoveredItem("/soumettre-une-reussite"))">Soumettre une réussite</a>
+            <div class="@GetIndicatorClass()" style="@GetIndicatorStyle()"></div>
+        </nav>
+
+        <AuthorizeView>
+            <Authorized>
+                @{
+                    var id = (context.User.FindFirst("discord:id")?.Value);
+                    var avatar = context.User.FindFirst("discord:avatar")?.Value;
+                    var avatarUrl = !string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(avatar)
+                    ? $"https://cdn.discordapp.com/avatars/{id}/{avatar}.png?size=64"
+                    : "https://cdn.discordapp.com/embed/avatars/0.png";
+                    var name = context.User.Identity?.Name ?? "Mon compte";
+                }
+
+                <div class="zone-droite">
+                    <a class="btn-invite-discord"
+                       href="https://discord.gg/6aqrsfxrEB"
+                       target="_blank" rel="noopener"
+                       aria-label="Rejoindre le serveur Discord"
+                       title="Rejoindre le serveur Discord"
+                       data-duration="0"
+                       data-loop-ms="1250">
+                        <img class="gif-hover"
+                             data-src="/Pictures/Discord.gif"
+                             src=""
+                             width="60" height="60"
+                             alt="Discord">
+                    </a>
+                    <div class="bloc-compte">
+                        <input type="checkbox" id="compte-open" class="toggle-compte" />
+
+                        <label for="compte-open" class="compte-toggle" role="button" aria-haspopup="menu" aria-controls="menu-compte">
+                            <img class="avatar-discord" src="@avatarUrl" alt="avatar" />
+                            <span class="texte-compte">@name</span>
+                            <span class="etat @statusClass" aria-label="Statut"></span>
+                            <span class="chevron" aria-hidden="true"></span>
+                        </label>
+
+                        <div id="menu-compte" class="menu-compte" role="menu">
+                            <div class="en-tete">
+                                <img class="avatar-discord" src="@avatarUrl" alt="" />
+                                <div>
+                                    <div class="nom">@name</div>
+                                    <div class="sous">Connecté via Discord</div>
+                                </div>
+                            </div>
+
+                            <a class="item" href="/profile" role="menuitem">Modifier le profil</a>
+                            <a class="item item--danger" href="/logout" role="menuitem">Déconnexion</a>
+                        </div>
+                        <label for="compte-open" class="overlay-fermeture" aria-hidden="true"></label>
+                    </div>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <a class="bouton-discord" href="/login/discord" target="_blank" rel="noopener">
+                    <img class="icone-discord" src="/Pictures/Discord.svg" alt="" aria-hidden="true" />
+                    Se connecter avec Discord
+                </a>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</CascadingAuthenticationState>
+
+<script>
+    window.addEventListener('message', function (e) {
+      if (e.data === 'auth:done') {
+        location.reload(); 
+      }
+    });
+</script>
+
+<script>
+    (function () {
+      const SELECTOR = '.btn-invite-discord';
+
+      function setup(anchor) {
+        const img = anchor.querySelector('img.gif-hover');
+        if (!img) return;
+
+        const raw = img.getAttribute('data-src') || '';
+        if (!raw) { console.error('gif-hover: data-src manquant.'); return; }
+
+        const animatedUrl = new URL(raw, document.baseURI).toString();
+        const preload = new Image();
+        preload.crossOrigin = 'anonymous';
+
+        preload.onload = () => {
+          try {
+            const c = document.createElement('canvas');
+            c.width = preload.width;
+            c.height = preload.height;
+            c.getContext('2d').drawImage(preload, 0, 0);
+            const stillUrl = c.toDataURL('image/png');
+            img.dataset.animated = animatedUrl;
+            img.dataset.still = stillUrl;
+            img.src = stillUrl;
+          } catch (err) {
+            console.warn('gif-hover: fallback GIF direct.', err);
+            img.dataset.animated = animatedUrl;
+            img.removeAttribute('data-still');
+            img.src = animatedUrl;
+          }
+        };
+        preload.onerror = () => console.error('gif-hover: échec chargement', animatedUrl);
+        preload.src = animatedUrl;
+
+        let stopTimer, forceStopTimer, playing = false, startTs = 0;
+
+        function play() {
+          if (playing) return;
+          playing = true;
+          startTs = performance.now();
+
+          const sep = img.dataset.animated.includes('?') ? '&' : '?';
+          img.src = img.dataset.animated + sep + 'cb=' + Date.now();
+
+          const d = parseInt(anchor.dataset.duration || '0', 10);
+          clearTimeout(forceStopTimer);
+          if (d > 0) {
+            forceStopTimer = setTimeout(stop, d);
+          }
+        }
+
+        function stopAfterCurrentLoop() {
+          if (!playing) return;
+          const loopMs = Math.max(50, parseInt(anchor.dataset.loopMs || '1200', 10));
+          const elapsed = performance.now() - startTs;
+          const remain = loopMs - (elapsed % loopMs);
+          clearTimeout(stopTimer);
+          stopTimer = setTimeout(stop, remain);
+        }
+
+        function stop() {
+          playing = false;
+          clearTimeout(stopTimer);
+          clearTimeout(forceStopTimer);
+          if (img.dataset.still) img.src = img.dataset.still;
+        }
+
+        anchor.addEventListener('mouseenter', play);
+        anchor.addEventListener('focusin', play);
+        anchor.addEventListener('mouseleave', stopAfterCurrentLoop);
+        anchor.addEventListener('focusout', stopAfterCurrentLoop);
+
+        anchor.addEventListener('mouseenter', () => clearTimeout(stopTimer));
+        anchor.addEventListener('focusin', () => clearTimeout(stopTimer));
+      }
+
+      function initAll() {
+        document.querySelectorAll(SELECTOR).forEach(a => {
+          if (a.dataset.gifInit) return;
+          a.dataset.gifInit = '1';
+          setup(a);
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAll);
+      } else {
+        initAll();
+      }
+
+      new MutationObserver(initAll).observe(document.body, { childList: true, subtree: true });
+    })();
+</script>
