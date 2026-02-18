@@ -18,7 +18,7 @@
 - [Technologies utilisées](#technologies)
 - [Installation du projet](#installation)
 
-# TheBandList (Site)
+# TheBandList
 
 **TheBandList** est une application web dédiée au jeu **Geometry Dash**.  
 Ce projet est développé **par moi**, dans un cadre personnel et par passion.  
@@ -103,7 +103,7 @@ L’objectif principal de TheBandList est de :
 
 ---
 
-## Interface utilisateur (Site)
+## Interface utilisateur
 
 - Design moderne et sombre
 - Navigation claire entre :
