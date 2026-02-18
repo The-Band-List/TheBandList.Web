@@ -1,0 +1,195 @@
+﻿@page "/"
+
+<div class="article">
+    @if (niveauSelectionne is not null)
+    {
+        <div class="fond-page-pile">
+            <div class="fond-page couche-a @(fondActif == "a" ? "est-visible" : null)"
+                 style=@($"background-image:url('{fondA ?? $"/MiniaturesNiveaux/{niveauSelectionne.Id}.png"}')")></div>
+
+            <div class="fond-page couche-b @(fondActif == "b" ? "est-visible" : null)"
+                 style=@($"background-image:url('{fondB ?? $"/MiniaturesNiveaux/{niveauSelectionne.Id}.png"}')")></div>
+        </div>
+        <div class="voile-page"></div>
+    }
+
+    <div class="liste-niveaux">
+        <div class="filtrage-container sticky-filter">
+            <input type="text" @bind="@recherche" @oninput="@(e => OnRechercheChanged(e.Value.ToString()))" placeholder="Rechercher" />
+            <div class="selectionner-une-duree-container">
+                <div class="selected-option">@GetSelectedDureeLabel()</div>
+                <div class="options">
+                    <p class="@(filtreDuree == "" ? "active" : "")" @onclick="OnToutesLesDureesClicked">Tous</p>
+                    <p class="@(filtreDuree == "short" ? "active" : "")" @onclick="OnShortClicked">Short</p>
+                    <p class="@(filtreDuree == "long" ? "active" : "")" @onclick="OnLongClicked">Long</p>
+                    <p class="@(filtreDuree == "xl" ? "active" : "")" @onclick="OnXlClicked">XL</p>
+                    <p class="@(filtreDuree == "xxl" ? "active" : "")" @onclick="OnXxlClicked">XXL</p>
+                </div>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <p>Chargement des niveaux...</p>
+        }
+        else if (!niveauxFiltres.Any())
+        {
+            <p>Aucun niveau trouvé</p>
+        }
+        else
+        {
+            <div class="liste-des-niveaux-container">
+                @foreach (var classement in classements)
+                {
+                    var niveau = niveauxFiltres.FirstOrDefault(n => n.Id == classement.NiveauId);
+                    if (niveau is null) { continue; }
+
+                    var isSelected = niveauSelectionne?.Id == niveau.Id;
+                    var thumb = $"/MiniaturesNiveaux/{niveau.Id}.png";
+
+                    <div class=@($"level-strip{(isSelected ? " is-selected" : "")}")
+                         role="button"
+                         tabindex="0"
+                         @onclick="() => AfficherDetailsNiveau(niveau.Id)">
+                        <span class="level-bg" style=@($"background-image:url('{thumb}')")></span>
+                        <span class="shade"></span>
+
+                        <span class="rank">#@classement.ClassementPosition</span>
+
+                        <div class="meta">
+                            <span class="title">@niveau.Nom</span>
+                            <div class="chips">
+                                <span class="chip chip-points">@classement.Points pts</span>
+                                <span class="chip">@ConvertirDuree(niveau.Duree)</span>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(niveau.Rating.ImageUrl))
+                        {
+                            <img class="badge" src="@niveau.Rating.ImageUrl"
+                                 alt="@niveau.Rating.NomDuFeature" loading="lazy" />
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="detail-niveaux @(niveauSelectionne is null ? "no-frame" : null)">
+        <div class="detail-inner">
+            @if (niveauSelectionne is null)
+            {
+                var topPoints = classements.Any() ? classements.Max(x => x.Points) : 0;
+
+                @foreach (var c in classements.OrderBy(c => c.ClassementPosition))
+                {
+                    var n = niveaux.FirstOrDefault(x => x.Id == c.NiveauId);
+                    if (n is null) continue;
+
+                    var victoiresCount = listeEntiereReussitesNiveaux?
+                        .Count(r => r.NiveauId == n.Id && r.Statut == "Accepter") ?? 0;
+                    var pct = topPoints > 0 ? Math.Round(c.Points * 100.0 / topPoints) : 0;
+
+                    <div class="level-card" @onclick="async () => AfficherDetailsNiveau(n.Id)">
+                        <div class="level-thumb">
+                            <img loading="lazy"
+                                 src=@($"/MiniaturesVideosVerification/{n.Id}.png")
+                                 alt="Miniature du niveau"
+                                 onerror="this.onerror=null; this.src='/images/default.png';" />
+                            <span class="rank-badge">#@c.ClassementPosition</span>
+                        </div>
+                        <div class="level-content">
+                            <h4 class="level-title">@n.Nom</h4>
+                            <p class="level-sub">Publié par <strong>@n.Publisher?.Nom</strong></p>
+                            <div class="points-victoires">
+                                <span>@c.Points pts</span>
+                                @if (victoiresCount is 1)
+                                {
+                                    <span>@victoiresCount victoire</span>
+                                }
+                                else
+                                {
+                                    <span>@victoiresCount victoires</span>
+                                }
+                            </div>
+                            <div class="purple-meter" style="--w:@pct"><i></i></div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                var pointsNiv = classements.FirstOrDefault(x => x.NiveauId == niveauSelectionne.Id)?.Points ?? 0;
+
+                <header class="detail-header">
+                    <div class="title-side">
+                        <h1 class="detail-title">@niveauSelectionne.Nom</h1>
+                        <div class="detail-chips">
+                            <span class="chip">#@classements.FirstOrDefault(c => c.NiveauId == niveauSelectionne.Id)?.ClassementPosition</span>
+                            <span class="chip">@pointsNiv pts</span>
+                            <span class="chip">@ConvertirDuree(niveauSelectionne.Duree)</span>
+                        </div>
+                    </div>
+                    <img loading="lazy" class="detail-difficulty" src="@niveauSelectionne.Rating.ImageUrl" alt="Difficulté" />
+                </header>
+                <div class="detail-people">
+                    <p>Créé par : @string.Join(", ", createurs.Select(c => c.Nom))</p>
+                    <p>Vérifié par : @niveauSelectionne.Verifieur?.Nom</p>
+                    <p>Publié par : @niveauSelectionne.Publisher?.Nom</p>
+                </div>
+
+                <div class="media-card">
+                    @if (!string.IsNullOrEmpty(niveauSelectionne.UrlIframeSrcVerification))
+                    {
+                        <div class="video-16x9">
+                            <iframe class="niveaux-selectionner-iframe"
+                                    src="@niveauSelectionne.UrlIframeSrcVerification"
+                                    title="Vidéo de vérification"
+                                    frameborder="0"
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="video-16x9 placeholder">Aucune vidéo disponible</div>
+                    }
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-box"><span class="info-label">Points</span><span class="info-value">@pointsNiv</span></div>
+                    <div class="info-box"><span class="info-label">ID du niveau</span><span class="info-value">@niveauSelectionne.IdDuNiveauDansLeJeu</span></div>
+                    <div class="info-box"><span class="info-label">Durée</span><span class="info-value">@ConvertirDuree(niveauSelectionne.Duree)</span></div>
+                    <div class="info-box"><span class="info-label">Mot de passe</span><span class="info-value">@niveauSelectionne.MotDePasse</span></div>
+                </div>
+
+                @if (reussitesNiveau is not null)
+                {
+                    var wins = reussitesNiveau.Where(r => r.NiveauId == niveauSelectionne.Id && r.Statut == "Accepter").ToList();
+                    if (wins.Any())
+                    {
+                        @if (wins.Count is 1)
+                        {
+                            <h2 class="victoires">Victoire: @wins.Count</h2>
+                        }
+                        else
+                        {
+                            <h2 class="victoires">Victoires: @wins.Count</h2>
+                        }
+
+                        @foreach (var reussite in wins.Select((value, index) => new { value, index }))
+                        {
+                            <div class="win-row">
+                                <span class="win-index">#@(reussite.index + 1)</span>
+                                <span class="win-user" @onclick="() => UtilisateurSelectionnerClick(reussite.value.Utilisateur?.Id)">
+                                    @reussite.value.Utilisateur?.Nom
+                                </span>
+                                <a class="win-yt" href="@reussite.value.Video" target="_blank">Preuve</a>
+                            </div>
+                        }
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>

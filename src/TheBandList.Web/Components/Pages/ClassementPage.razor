@@ -1,0 +1,280 @@
+﻿@page "/classement"
+
+<div class="article">
+    <div class="liste-utilisateur">
+        <div class="barre-outil">
+            <input type="text" @bind="searchQuery" @bind:event="oninput" placeholder="Rechercher un joueur..." />
+            <button class="bouton-tri" @onclick="ToggleMenuTri">Trier ▾</button>
+        </div>
+
+        @if (afficherMenuTri)
+        {
+            <div class="modal-backdrop" @onclick="FermerMenuTri"></div>
+            <div class="modal-panel">
+                <div class="modal-card is-large" @onclick:stopPropagation="true">
+                    <div class="modal-header">
+                        <h2>Paramètres du classement</h2>
+                        <button class="modal-close" title="Fermer" @onclick="FermerMenuTri">×</button>
+                    </div>
+                    <div class="modal-grid">
+                        <div class="modal-left">
+                            <div class="sort-tabs">
+                                <button class="@TabClassEnAttente(TabVue.Players)"
+                                    @onclick="() => TabEnAttente(TabVue.Players)">Joueurs</button>
+                                <button class="@TabClassEnAttente(TabVue.Creators)"
+                                    @onclick="() => TabEnAttente(TabVue.Creators)">Créateurs</button>
+                                <button class="@TabClassEnAttente(TabVue.Wins)"
+                                    @onclick="() => TabEnAttente(TabVue.Wins)">Niveaux réussis</button>
+                            </div>
+
+                            @if (tabEnAttente == TabVue.Players)
+                            {
+                                <div class="trie-card">
+                                    <h3>Tri joueurs</h3>
+                                    <label><input type="radio" name="p" value="PointsDesc"
+                                            @onchange="(_) => enAttenteTriParJoueur = TriParJoueur.PointsDesc"
+                                            checked="@(@enAttenteTriParJoueur == TriParJoueur.PointsDesc)" /> Points ↓</label>
+                                    <label><input type="radio" name="p" value="PointsAsc"
+                                            @onchange="(_) => enAttenteTriParJoueur = TriParJoueur.PointsAsc"
+                                            checked="@(@enAttenteTriParJoueur == TriParJoueur.PointsAsc)" /> Points ↑</label>
+                                    <label><input type="radio" name="p" value="NameAsc"
+                                            @onchange="(_) => enAttenteTriParJoueur = TriParJoueur.NameAsc"
+                                            checked="@(@enAttenteTriParJoueur == TriParJoueur.NameAsc)" /> Nom A→Z</label>
+                                    <label><input type="radio" name="p" value="NameDesc"
+                                            @onchange="(_) => enAttenteTriParJoueur = TriParJoueur.NameDesc"
+                                            checked="@(@enAttenteTriParJoueur == TriParJoueur.NameDesc)" /> Nom Z→A</label>
+                                </div>
+                            }
+                            else if (tabEnAttente == TabVue.Creators)
+                            {
+                                <div class="trie-card">
+                                    <h3>Tri créateurs</h3>
+                                    <label><input type="radio" name="c" value="CountDesc"
+                                            @onchange="(_) => enAttenteTriParCreateur = TriParCreateur.CountDesc"
+                                            checked="@(@enAttenteTriParCreateur == TriParCreateur.CountDesc)" /> Créations
+                                        ↓</label>
+                                    <label><input type="radio" name="c" value="CountAsc"
+                                            @onchange="(_) => enAttenteTriParCreateur = TriParCreateur.CountAsc"
+                                            checked="@(@enAttenteTriParCreateur == TriParCreateur.CountAsc)" /> Créations
+                                        ↑</label>
+                                    <label><input type="radio" name="c" value="NameAsc"
+                                            @onchange="(_) => enAttenteTriParCreateur = TriParCreateur.NameAsc"
+                                            checked="@(@enAttenteTriParCreateur == TriParCreateur.NameAsc)" /> Nom A→Z</label>
+                                    <label><input type="radio" name="c" value="NameDesc"
+                                            @onchange="(_) => enAttenteTriParCreateur = TriParCreateur.NameDesc"
+                                            checked="@(@enAttenteTriParCreateur == TriParCreateur.NameDesc)" /> Nom Z→A</label>
+                                </div>
+                            }
+                            else if (tabEnAttente == TabVue.Wins)
+                            {
+                                <div class="trie-card">
+                                    <h3>Tri réussites</h3>
+                                    <label><input type="radio" name="w" value="WinsDesc"
+                                            @onchange="(_) => enAttenteTriParVictoire = TriParVictoire.WinsDesc"
+                                            checked="@(@enAttenteTriParVictoire == TriParVictoire.WinsDesc)" /> Réussites
+                                        ↓</label>
+                                    <label><input type="radio" name="w" value="WinsAsc"
+                                            @onchange="(_) => enAttenteTriParVictoire = TriParVictoire.WinsAsc"
+                                            checked="@(@enAttenteTriParVictoire == TriParVictoire.WinsAsc)" /> Réussites
+                                        ↑</label>
+                                    <label><input type="radio" name="w" value="NameAsc"
+                                            @onchange="(_) => enAttenteTriParVictoire = TriParVictoire.NameAsc"
+                                            checked="@(@enAttenteTriParVictoire == TriParVictoire.NameAsc)" /> Nom A→Z</label>
+                                    <label><input type="radio" name="w" value="NameDesc"
+                                            @onchange="(_) => enAttenteTriParVictoire = TriParVictoire.NameDesc"
+                                            checked="@(@enAttenteTriParVictoire == TriParVictoire.NameDesc)" /> Nom Z→A</label>
+                                </div>
+                            }
+
+                            <div class="sort-actions">
+                                <button class="bouton-appliquer" @onclick="AppliquerLeTriEtFermer">Appliquer</button>
+                                <button class="bouton-reset" @onclick="ResetSort">Réinitialiser</button>
+                            </div>
+                        </div>
+                        <div class="modal-right">
+                            @* Trie par type de démon *@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (utilisateursAvecPoints == null && createursAvecNiveaux == null)
+        {
+            <p>Chargement des classements...</p>
+        }
+        else
+        {
+            @switch (tabActuel)
+            {
+                case TabVue.Players:
+                    @foreach (var (utilisateur, index) in ObtenirLaVueJoueur()
+                            .Where(u => u.Nom?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ?? false)
+                            .Select((u, i) => (u, i)))
+                    {
+                        <div @onclick="() => AfficherDetailsUtilisateur(utilisateur.Id)" class="utilisateur-groupe">
+                            <p class="utilisateur-groupe-index">#@(index + 1)</p>
+                            <p class="@ObtenirClassBackground(utilisateur.Id) utilisateur-groupe-nom">
+                                @utilisateur.Nom
+                            </p>
+                            <p class="utilisateur-groupe-nombre">@utilisateur.TotalPoints Points</p>
+                        </div>
+                    }
+                    break;
+
+                case TabVue.Creators:
+                    @foreach (var (createur, index) in ObtenirLaVueCreateur()
+                            .Where(c => c.Nom?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ?? false)
+                            .Select((c, i) => (c, i)))
+                    {
+                        <div @onclick="() => AfficherDetailsUtilisateur(createur.Id)" class="utilisateur-groupe">
+                            <p class="utilisateur-groupe-index">#@(index + 1)</p>
+                            <p class="@ObtenirClassBackground(createur.Id) utilisateur-groupe-nom">
+                                @createur.Nom
+                            </p>
+                            <p class="utilisateur-groupe-nombre">@createur.NombreNiveaux Créations</p>
+                        </div>
+                    }
+                    break;
+
+                case TabVue.Wins:
+                    @foreach (var (utilisateur, index) in ObtenirLaVueVictoire()
+                            .Where(u => u.Nom?.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ?? false)
+                            .Select((u, i) => (u, i)))
+                    {
+                        <div @onclick="() => AfficherDetailsUtilisateur(utilisateur.Id)" class="utilisateur-groupe">
+                            <p class="utilisateur-groupe-index">#@(index + 1)</p>
+                            <p class="@ObtenirClassBackground(utilisateur.Id) utilisateur-groupe-nom">
+                                @utilisateur.Nom
+                            </p>
+                            <p class="utilisateur-groupe-nombre">@utilisateur.TotalNiveauxReussis Niveaux réussis</p>
+                        </div>
+                    }
+                    break;
+            }
+        }
+    </div>
+
+    <div class="detail-utilisateur">
+        @if (utilisateurSelectionne == null)
+        {
+            <p>Aucun utilisateur sélectionné</p>
+        }
+        else
+        {
+            <div class="user-header">
+                <div class="user-title">
+                    @if (utilisateurSelectionne.Classement == 1)
+                    {
+                        <img class="image-trophee" src="Pictures/TropheeTop1.png" />
+                    }
+                    @if (meilleurReussiteur != null && utilisateurSelectionne.Id == meilleurReussiteur.Id)
+                    {
+                        <img class="image-stars" src="Pictures/Stars.png" alt="Top Réussites" />
+                    }
+                    @if (meilleurCreateur != null && utilisateurSelectionne.Id == meilleurCreateur.Id)
+                    {
+                        <img class="image-meilleur-createur" src="Pictures/CreatorPoint.png" alt="Meilleur Créateur" />
+                    }
+
+                    <h1>
+                        @if (utilisateurSelectionne.Classement > 0)
+                        {
+                            <span class="size rank-gap">#@utilisateurSelectionne.Classement</span>
+                            @utilisateurSelectionne.Nom
+                        }
+                        else
+                        {
+                            @utilisateurSelectionne.Nom
+                        }
+                    </h1>
+                </div>
+                <div class="stats-chips">
+                    <div class="stat-chip">Points : <strong class="bold">@utilisateurSelectionne.TotalPoints</strong></div>
+                    <div class="stat-chip">Niveaux réussis : <strong
+                            class="bold">@utilisateurSelectionne.TotalNiveauxReussis</strong></div>
+                    <div class="stat-chip">Niveaux créés : <strong
+                            class="bold">@utilisateurSelectionne.TotalNiveauxCreer</strong></div>
+                </div>
+            </div>
+
+            @if (niveauxReussis != null && niveauxReussis.Any())
+            {
+                <h2>Niveaux réussis (@niveauxReussis.Count) :</h2>
+                <div class="cartes-niveaux">
+                    @foreach (var niveau in niveauxReussis)
+                    {
+                        <div class="carte-niveau carte-niveau--reussi" style=@($"--mini:url('/MiniaturesNiveaux/{niveau.Id}.png')")
+                            @onclick="() => NiveauSelectionnerClick(niveau.Id)">
+                            <span class="rang">#@niveau.ClassementPosition</span>
+                            <div class="meta">
+                                <span class="titre">@niveau.Nom</span>
+                                <div class="jetons">
+                                    <span class="jeton jeton-points">+@niveau.Points pts</span>
+                                    <span class="jeton">@ConvertirDuree(niveau.Duree)</span>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(niveau.Video))
+                            {
+                                <a class="lien-preuve" href="@niveau.Video" target="_blank" rel="noopener noreferrer">Preuve</a>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (niveauxVerifies != null && niveauxVerifies.Any())
+            {
+                <h2>Niveaux vérifiés (@niveauxVerifies.Count) :</h2>
+                <div class="cartes-niveaux">
+                    @foreach (var niveau in niveauxVerifies)
+                    {
+                        <div class="carte-niveau carte-niveau--verifie" style=@($"--mini:url('/MiniaturesNiveaux/{niveau.Id}.png')")
+                            @onclick="() => NiveauSelectionnerClick(niveau.Id)">
+                            <span class="rang">#@niveau.ClassementPosition</span>
+                            <div class="meta">
+                                <span class="titre">@niveau.Nom</span>
+                                <div class="jetons">
+                                    <span class="jeton jeton-points">+@niveau.Points pts</span>
+                                    <span class="jeton">@ConvertirDuree(niveau.Duree)</span>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(niveau.UrlVerification))
+                            {
+                                <a class="lien-preuve" href="@niveau.UrlVerification" target="_blank"
+                                    rel="noopener noreferrer">Vérification</a>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (niveauxCrees != null && niveauxCrees.Any())
+            {
+                <h2>Niveaux créés (@niveauxCrees.Count) :</h2>
+                <div class="cartes-niveaux">
+                    @foreach (var niveau in niveauxCrees)
+                    {
+                        <div class="carte-niveau carte-niveau--cree" style=@($"--mini:url('/MiniaturesNiveaux/{niveau.Id}.png')")
+                            @onclick="() => NiveauSelectionnerClick(niveau.Id)">
+                            <span class="rang">#@niveau.ClassementPosition</span>
+                            <div class="meta">
+                                <span class="titre">@niveau.Nom</span>
+                                <div class="jetons">
+                                    <span class="jeton">@ConvertirDuree(niveau.Duree)</span>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(niveau.Video))
+                            {
+                                <a class="lien-preuve" href="@niveau.Video" target="_blank" rel="noopener noreferrer">Vérification</a>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>

@@ -1,0 +1,96 @@
+﻿@page "/soumettre-une-reussite"
+
+<CascadingAuthenticationState>
+    <div class="article">
+        <div class="page-bg @(showBgA ? "is-active" : "")" style=@($"background-image:url('{bgA}')")></div>
+        <div class="page-bg @(showBgA ? "" : "is-active")" style=@($"background-image:url('{bgB}')")></div>
+        <div class="page-tint"></div>
+        <div class="soumettre-un-niveau-container">
+            <h1>Soumettre une réussite</h1>
+            <EditForm Model="newSubmission">
+                <DataAnnotationsValidator />
+                <div class="formulaire">
+                    @if (isAuthenticated is false)
+                    {
+                        <div>
+                            <div class="input-style-container">
+                                <input type="text" id="nom-utilisateur" @bind="currentUtilisateurInput"
+                                       @onkeydown="HandleKeyDownUtilisateur"
+                                       @oninput="OnUtilisateurInput"
+                                       @onblur="HandleFocusOutUtilisateur"
+                                       @onfocus="OnFocusUtilisateur"
+                                       autocomplete="new-password" required />
+                                <label for="nom-utilisateur">Nom de joueur :</label>
+                            </div>
+                            <ul>
+                                @if (utilisateurSuggestions.Any())
+                                {
+                                    @foreach (var suggestion in utilisateurSuggestions.Select((value, index) => new { value, index }))
+                                    {
+                                        <li class="list-group-item @(selectedUtilisateurIndex == suggestion.index ? "active" : "")"
+                                            @onclick="(() => SelectUtilisateur(suggestion.value))">
+                                            @suggestion.value
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="connected-user-badge">
+                            Connecté via Discord en tant que <strong>@connectedUsername</strong>
+                        </div>
+                    }
+
+                    <div>
+                        <input type="text" id="fake-nom-niveau" autocomplete="username" />
+                        <div class="input-style-container">
+                            <input type="text" id="nom-niveau" @bind="currentNiveauInput"
+                                   @onkeydown="HandleKeyDownNiveau"
+                                   @oninput="OnNiveauInput"
+                                   @onblur="HandleFocusOutNiveau"
+                                   @onfocus="OnFocusNiveau"
+                                   autocomplete="new-password" required />
+                            <label for="nom-niveau">Nom du niveau :</label>
+                        </div>
+                        <ul>
+                            @if (niveauSuggestions.Any())
+                            {
+                                @foreach (var suggestion in niveauSuggestions.Select((value, index) => new { value, index }))
+                                {
+                                    <li class="list-group-item @(selectedNiveauIndex == suggestion.index ? "active" : "")"
+                                        @onclick="(() => SelectNiveau(suggestion.value))">
+                                        @suggestion.value
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="input-style-container">
+                        <input type="text" id="url-video" @bind="newSubmission.UrlVideo" autocomplete="new-password" required />
+                        <label for="url-video">URL de la vidéo :</label>
+                    </div>
+
+                    <button type="button" @onclick="ValidateAndSubmit">Soumettre</button>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="message-error">@errorMessage</div>
+                    }
+
+                    @if (isLoading)
+                    {
+                        <div class="spinner"></div>
+                    }
+
+                    @if (submissionSuccess)
+                    {
+                        <div class="message-valid">Soumission réussie !</div>
+                    }
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</CascadingAuthenticationState>
