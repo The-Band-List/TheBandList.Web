@@ -79,38 +79,58 @@ app.UseStaticFiles();
 var imagesRoot = "/var/thebandlist/keys";
 
 #if DEBUG
+if (!Directory.Exists(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesNiveaux")))
+{
+    Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesNiveaux"));
+}
+if (!Directory.Exists(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesVideosVerification")))
+{
+    Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesVideosVerification"));
+}
+if (!Directory.Exists(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "DemonsFaces")))
+{
+    Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "DemonsFaces"));
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesNiveaux")),
+    Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesNiveaux")),
     RequestPath = "/MiniaturesNiveaux"
 });
 
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesVideosVerification")),
+    Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "MiniaturesVideosVerification")),
     RequestPath = "/MiniaturesVideosVerification"
+});
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+    Path.Combine(app.Environment.ContentRootPath, "wwwroot", "PicturesDev", "DemonsFaces")),
+    RequestPath = "/DemonsFaces"
 });
 #else
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(imagesRoot, "MiniaturesNiveaux")),
+    Path.Combine(imagesRoot, "MiniaturesNiveaux")),
     RequestPath = "/MiniaturesNiveaux"
 });
 
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(imagesRoot, "MiniaturesVideosVerification")),
+    Path.Combine(imagesRoot, "MiniaturesVideosVerification")),
     RequestPath = "/MiniaturesVideosVerification"
 });
 
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(imagesRoot, "DemonsFaces")),
+    Path.Combine(imagesRoot, "DemonsFaces")),
     RequestPath = "/DemonsFaces"
 });
 #endif

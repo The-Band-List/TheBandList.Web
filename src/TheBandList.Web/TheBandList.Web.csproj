@@ -20,8 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\PicturesDev\MiniaturesNiveaux\" />
-    <Folder Include="wwwroot\PicturesDev\MiniaturesVideosVerification\" />
+    <EditorConfigFiles Remove="C:\Users\Timeo\source\repos\The-Band-List\TheBandList.Web\src\TheBandList.Web\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Timeo\source\repos\The-Band-List\TheBandList.Web\src\TheBandList.Web\.editorconfig" />
   </ItemGroup>
 
 </Project>
