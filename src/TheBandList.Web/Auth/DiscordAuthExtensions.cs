@@ -96,9 +96,12 @@ public static class DiscordAuthExtensions
                         ctx.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddYears(1);
 
                         var discordId = user.GetProperty("id").GetString()!;
-                        var username = user.TryGetProperty("global_name", out var gl) && gl.ValueKind != JsonValueKind.Null
-                            ? gl.GetString()
-                            : user.GetProperty("username").GetString();
+                        var discordUsername = user.TryGetProperty("username", out var un) ? un.GetString() : null;
+
+                        var displayName =
+                            user.TryGetProperty("global_name", out var gl) && gl.ValueKind != JsonValueKind.Null
+                                ? gl.GetString()
+                                : discordUsername;
                         var avatar = user.TryGetProperty("avatar", out var av) ? av.GetString() : null;
 
                         var db = ctx.HttpContext.RequestServices.GetRequiredService<TheBandListWebDbContext>();
@@ -111,18 +114,20 @@ public static class DiscordAuthExtensions
                             account = new DiscordAccount
                             {
                                 DiscordId = discordId,
-                                Username = username,
+                                DiscordUsername = discordUsername,
+                                DiscordDisplayName = displayName,
                                 AvatarHash = avatar,
                                 Utilisateur = new Utilisateur
                                 {
-                                    Nom = username ?? "Utilisateur Discord"
+                                    Nom = displayName ?? "Utilisateur Discord"
                                 },
                             };
                             db.DiscordAccounts.Add(account);
                         }
                         else
                         {
-                            account.Username = username;
+                            account.DiscordUsername = discordUsername;
+                            account.DiscordDisplayName = displayName;
                             account.AvatarHash = avatar;
                         }
 
@@ -131,7 +136,15 @@ public static class DiscordAuthExtensions
                         var id = ctx.Identity!;
                         id.AddClaim(new Claim("discord:id", discordId));
                         if (!string.IsNullOrEmpty(avatar)) id.AddClaim(new Claim("discord:avatar", avatar));
-                        if (!string.IsNullOrEmpty(username)) id.AddClaim(new Claim(ClaimTypes.Name, username));
+
+                        if (!string.IsNullOrEmpty(discordUsername))
+                            id.AddClaim(new Claim("discord:username", discordUsername));
+
+                        if (!string.IsNullOrEmpty(displayName))
+                            id.AddClaim(new Claim("discord:display_name", displayName));
+
+                        if (!string.IsNullOrEmpty(displayName))
+                            id.AddClaim(new Claim(ClaimTypes.Name, displayName));
                     },
                     OnRemoteFailure = ctx =>
                     {

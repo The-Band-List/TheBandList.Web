@@ -29,6 +29,7 @@ namespace TheBandList.Web.Components.Pages
         string? FusionMessage;
 
         string? AvatarUrl;
+        string? DiscordUsername;
         string? DiscordDisplayName;
 
         int UtilisateurId;
@@ -50,7 +51,6 @@ namespace TheBandList.Web.Components.Pages
 
                 var discordId = user.FindFirst("discord:id")?.Value;
                 var avatar = user.FindFirst("discord:avatar")?.Value;
-                DiscordDisplayName = user.Identity?.Name ?? "Utilisateur";
 
                 if (string.IsNullOrWhiteSpace(discordId))
                 {
@@ -76,6 +76,9 @@ namespace TheBandList.Web.Components.Pages
                         return;
                     }
 
+                    Nom = account.Utilisateur.Nom ?? string.Empty;
+                    DiscordUsername = account.DiscordUsername ?? "—";
+                    DiscordDisplayName = account.DiscordDisplayName ?? DiscordUsername ?? "—";
                     UtilisateurId = account.Utilisateur.Id;
                     Nom = account.Utilisateur.Nom ?? string.Empty;
                 }
