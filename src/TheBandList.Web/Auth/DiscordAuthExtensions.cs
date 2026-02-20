@@ -51,6 +51,9 @@ public static class DiscordAuthExtensions
                 o.ExpireTimeSpan = TimeSpan.FromDays(365);
                 o.SlidingExpiration = true;
                 o.Cookie.IsEssential = true;
+                o.Cookie.SameSite = SameSiteMode.Lax;
+                o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                o.Cookie.HttpOnly = true;
             })
             .AddOAuth("Discord", o =>
             {
@@ -63,7 +66,7 @@ public static class DiscordAuthExtensions
                 o.UserInformationEndpoint = "https://discord.com/api/users/@me";
 
                 o.Scope.Add("identify");
-                o.SaveTokens = true;
+                o.SaveTokens = false;
                 o.UsePkce = true;
 
                 o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
@@ -114,9 +117,6 @@ public static class DiscordAuthExtensions
                                 {
                                     Nom = username ?? "Utilisateur Discord"
                                 },
-                                AccessToken = ctx.AccessToken,
-                                RefreshToken = ctx.RefreshToken,
-                                AccessTokenExpiresAt = ctx.ExpiresIn.HasValue ? DateTime.UtcNow.Add(ctx.ExpiresIn.Value) : null
                             };
                             db.DiscordAccounts.Add(account);
                         }
@@ -124,9 +124,6 @@ public static class DiscordAuthExtensions
                         {
                             account.Username = username;
                             account.AvatarHash = avatar;
-                            account.AccessToken = ctx.AccessToken;
-                            account.RefreshToken = ctx.RefreshToken;
-                            account.AccessTokenExpiresAt = ctx.ExpiresIn.HasValue ? DateTime.UtcNow.Add(ctx.ExpiresIn.Value) : null;
                         }
 
                         await db.SaveChangesAsync();
@@ -170,16 +167,29 @@ public static class DiscordAuthExtensions
 
         app.MapGet("/auth/close", async ctx =>
         {
+#if DEBUG
             const string html = @"<!doctype html>
                 <meta charset=""utf-8"">
                 <title>Connexion Discord</title>
                 <p>Connexion réussie. Cette fenêtre va se fermer…</p>
                 <script>
-                    if (window.opener) { try { window.opener.postMessage('auth:done', '*'); } catch(e) {} window.close(); }
+                    if (window.opener) { try { window.opener.postMessage('auth:done', 'https://localhost:7015'); } catch(e) {} window.close(); }
                     else { location.href = '/'; }
                 </script>";
             ctx.Response.ContentType = "text/html; charset=utf-8";
             await ctx.Response.WriteAsync(html);
+#else
+            const string html = @"<!doctype html>
+                <meta charset=""utf-8"">
+                <title>Connexion Discord</title>
+                <p>Connexion réussie. Cette fenêtre va se fermer…</p>
+                <script>
+                    if (window.opener) { try { window.opener.postMessage('auth:done', 'https://thebandlist.fr'); } catch(e) {} window.close(); }
+                    else { location.href = '/'; }
+                </script>";
+            ctx.Response.ContentType = "text/html; charset=utf-8";
+            await ctx.Response.WriteAsync(html);
+#endif
         });
 
         return app;
