@@ -6,7 +6,8 @@
 
         public string DiscordId { get; set; } = default!;
 
-        public string? Username { get; set; }
+        public string? DiscordUsername { get; set; }
+        public string? DiscordDisplayName { get; set; }
         public string? AvatarHash { get; set; }
 
         public int UtilisateurId { get; set; }
