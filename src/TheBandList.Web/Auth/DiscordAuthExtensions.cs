@@ -132,6 +132,13 @@ public static class DiscordAuthExtensions
                         id.AddClaim(new Claim("discord:id", discordId));
                         if (!string.IsNullOrEmpty(avatar)) id.AddClaim(new Claim("discord:avatar", avatar));
                         if (!string.IsNullOrEmpty(username)) id.AddClaim(new Claim(ClaimTypes.Name, username));
+                    },
+                    OnRemoteFailure = ctx =>
+                    {
+                        ctx.HandleResponse();
+                        var error = ctx.Failure?.Message ?? "Erreur inconnue";
+                        ctx.Response.Redirect("/"); // TODO rajouter un toast d'erreur
+                        return Task.CompletedTask;
                     }
                 };
             });
@@ -171,6 +178,21 @@ public static class DiscordAuthExtensions
             const string html = @"<!doctype html>
                 <meta charset=""utf-8"">
                 <title>Connexion Discord</title>
+                <style>
+                  body {
+                    font-family: system-ui;
+                    background: #0f172a;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    margin: 0;
+                  }
+                  p { 
+                    opacity: 0.7; 
+                  }
+                </style>
                 <p>Connexion réussie. Cette fenêtre va se fermer…</p>
                 <script>
                     if (window.opener) { try { window.opener.postMessage('auth:done', 'https://localhost:7015'); } catch(e) {} window.close(); }
@@ -183,6 +205,21 @@ public static class DiscordAuthExtensions
                 <meta charset=""utf-8"">
                 <title>Connexion Discord</title>
                 <p>Connexion réussie. Cette fenêtre va se fermer…</p>
+                <style>
+                  body {
+                    font-family: system-ui;
+                    background: #0f172a;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    margin: 0;
+                  }
+                  p { 
+                    opacity: 0.7; 
+                  }
+                </style>
                 <script>
                     if (window.opener) { try { window.opener.postMessage('auth:done', 'https://thebandlist.fr'); } catch(e) {} window.close(); }
                     else { location.href = '/'; }
