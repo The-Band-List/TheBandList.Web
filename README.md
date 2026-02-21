@@ -137,16 +137,6 @@ Cette section regroupe les fonctionnalités **en cours de réflexion ou prévues
 
 ---
 
-### Niveaux & musiques
-
-- Ajout des musiques associées aux niveaux :
-    - ID de la musique
-    - lecteur audio intégré
-    - possibilité de téléchargement
-- Meilleure mise en valeur des détails d’un niveau
-
----
-
 ### Liaison Geometry Dash
 
 - Possibilité de lier un **compte Geometry Dash** à un profil TheBandList
