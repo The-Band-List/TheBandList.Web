@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 
 <CascadingAuthenticationState>
     <div class="navbar">
@@ -6,11 +6,18 @@
             <img src="/Pictures/LogoTheBandListComplet.png" />
         </a>
 
-        <nav @onmouseleave="HandleNavMouseLeave">
-            <a href="/" @onclick="GoToHomePage" class="nav-item @GetSelectedClass("/")" @onclick:preventDefault="true" @onmouseover="@(() => SetHoveredItem("/"))">Liste</a>
-            <a href="/classement" class="nav-item @GetSelectedClass("/classement")" @onmouseover="@(() => SetHoveredItem("/classement"))">Classement</a>
-            <a href="/soumettre-une-reussite" class="nav-item @GetSelectedClass("/soumettre-une-reussite")" @onmouseover="@(() => SetHoveredItem("/soumettre-une-reussite"))">Soumettre une réussite</a>
-            <div class="@GetIndicatorClass()" style="@GetIndicatorStyle()"></div>
+        <nav id="nav-root" @onmouseleave="HandleNavMouseLeave">
+            <a href="/" @onclick="GoToHomePage" class="nav-item" @onclick:preventDefault="true" @onmouseover="@(() => SetHoveredItem("/"))">Liste</a>
+            <a href="/classement" class="nav-item" @onmouseover="@(() => SetHoveredItem("/classement"))">Classement</a>
+            <a href="/soumettre-une-reussite" class="nav-item" @onmouseover="@(() => SetHoveredItem("/soumettre-une-reussite"))">Soumettre une réussite</a>
+
+            <div class="@GetIndicatorClass()" id="nav-indicator" style="@GetIndicatorStyle()"></div>
+
+            <div class="nav-mirror" id="nav-mirror" aria-hidden="true">
+                <span class="nav-item nav-mirror-item">Liste</span>
+                <span class="nav-item nav-mirror-item">Classement</span>
+                <span class="nav-item nav-mirror-item">Soumettre une réussite</span>
+            </div>
         </nav>
 
         <AuthorizeView>
@@ -77,7 +84,7 @@
 <script>
     window.addEventListener('message', function (e) {
       if (e.data === 'auth:done') {
-        location.reload(); 
+        location.reload();
       }
     });
 </script>
@@ -154,7 +161,7 @@
         anchor.addEventListener('focusin', play);
         anchor.addEventListener('mouseleave', stopAfterCurrentLoop);
         anchor.addEventListener('focusout', stopAfterCurrentLoop);
-
+        
         anchor.addEventListener('mouseenter', () => clearTimeout(stopTimer));
         anchor.addEventListener('focusin', () => clearTimeout(stopTimer));
       }
@@ -174,5 +181,55 @@
       }
 
       new MutationObserver(initAll).observe(document.body, { childList: true, subtree: true });
+    })();
+</script>
+
+<script>
+    (function () {
+        function startMirrorLoop() {
+            const indicator = document.getElementById('nav-indicator');
+            const mirror    = document.getElementById('nav-mirror');
+            if (!indicator || !mirror) { 
+                requestAnimationFrame(startMirrorLoop); 
+                return; 
+            }
+
+            const nav = indicator.closest('nav');
+            let lastClip = '';
+
+            function frame() {
+                requestAnimationFrame(frame);
+
+                const hidden = indicator.classList.contains('indicator--hidden');
+
+                if (hidden) {
+                    const clip = 'inset(0 100% 0 100%)';
+                    if (lastClip !== clip) { 
+                        mirror.style.clipPath = lastClip = clip; 
+                    }
+
+                    return;
+                }
+
+                const navRect = nav.getBoundingClientRect();
+                const indRect = indicator.getBoundingClientRect();
+
+                const left  = Math.max(0, indRect.left  - navRect.left);
+                const right = Math.max(0, navRect.right - indRect.right);
+                const clip  = `inset(0 ${right.toFixed(2)}px 0 ${left.toFixed(2)}px round 20px)`;
+
+                if (lastClip !== clip) { 
+                    mirror.style.clipPath = lastClip = clip; 
+                }
+            }
+
+            requestAnimationFrame(frame);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startMirrorLoop);
+        } else {
+            startMirrorLoop();
+        }
     })();
 </script>
