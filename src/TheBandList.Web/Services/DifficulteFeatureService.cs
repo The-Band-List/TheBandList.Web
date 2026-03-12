@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using TheBandList.Web.Entities;
 using TheBandList.Web.Entities.Context;
 
-namespace TheBandList.Web.Service
+namespace TheBandList.Web.Services
 {
     public class DifficulteFeatureService
     {

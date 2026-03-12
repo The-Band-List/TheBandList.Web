@@ -50,26 +50,28 @@ a {
     color: var(--nav-bar-secondary);
     position: relative;
     z-index: 2;
-    transition: color .25s ease;
     text-align: center;
     user-select: none;
+    white-space: nowrap;
 }
 
 nav a.nav-item {
     color: var(--nav-bar-secondary);
 }
 
-nav a.nav-item.hovered {
-    color: var(--main-purple);
-    cursor: pointer !important;
+.nav-mirror {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    z-index: 5;
+    clip-path: inset(0 100% 0 100%);
 }
 
-nav a.nav-item.selected:not(.hovered) {
-    color: var(--nav-bar-secondary);
-}
-
-nav a.nav-item.selected.hovered {
+.nav-mirror-item {
     color: var(--main-purple);
+    cursor: default;
 }
 
 .indicator {
@@ -77,7 +79,6 @@ nav a.nav-item.selected.hovered {
     background: var(--nav-bar-secondary);
     border-radius: 20px;
     z-index: 1;
-    box-shadow: 0 6px 18px rgba(0,0,0,.18);
     will-change: left,width,opacity,filter,box-shadow;
     transition: left .35s cubic-bezier(.2,.8,.2,1), width .35s cubic-bezier(.2,.8,.2,1), opacity .35s ease, filter .35s ease, box-shadow .35s ease;
 }
@@ -161,7 +162,7 @@ nav a.nav-item.selected.hovered {
 }
 
 @media (prefers-reduced-motion:reduce) {
-    .indicator, .indicator::before, .indicator::after, .menu-compte, .compte-toggle, .nav-item {
+    .indicator, .indicator::before, .indicator::after, .nav-mirror, .menu-compte, .compte-toggle, .nav-item {
         transition: none !important;
         animation: none !important;
     }
@@ -316,10 +317,6 @@ nav a.nav-item.selected.hovered {
     display: block;
 }
 
-.compte-toggle {
-    z-index: 30;
-}
-
 .overlay-fermeture {
     position: fixed;
     inset: 0;
@@ -374,7 +371,7 @@ nav a.nav-item.selected.hovered {
     color: var(--nav-bar-secondary);
 }
 
-.menu-compte .item[href*="/Profil"]::before {
+.menu-compte .item[href*="/profile"]::before {
     content: "";
     width: 18px;
     height: 18px;
@@ -431,23 +428,12 @@ nav a.nav-item.selected.hovered {
     box-shadow: 0 6px 16px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.06);
 }
 
-.bouton-discord:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-}
-
 .icone-discord {
     width: 20px;
     height: 20px;
     flex: 0 0 20px;
     display: block;
     filter: drop-shadow(0 1px 0 rgba(0,0,0,.15));
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .bouton-discord {
-        transition: none;
-    }
 }
 
 .compte-toggle:focus-visible,
@@ -506,42 +492,6 @@ nav a.nav-item.selected.hovered {
 .btn-invite-discord:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 2px;
-}
-
-.btn-invite-discord .icon-still,
-.btn-invite-discord .icon-gif {
-    width: 26px;
-    height: 26px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: block;
-    object-fit: contain;
-    transition: opacity .12s linear;
-}
-
-.btn-invite-discord .icon-gif {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.btn-invite-discord.is-playing .icon-still {
-    opacity: 0;
-}
-
-.btn-invite-discord.is-playing .icon-gif {
-    opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .btn-invite-discord .icon-gif {
-        display: none;
-    }
-
-    .btn-invite-discord .icon-still {
-        opacity: 1 !important;
-    }
 }
 
 .gif-discord {

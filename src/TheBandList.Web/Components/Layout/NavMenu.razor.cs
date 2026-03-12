@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
-using TheBandList.Web.Service;
+using TheBandList.Web.Services;
 
 namespace TheBandList.Web.Components.Layout
 {

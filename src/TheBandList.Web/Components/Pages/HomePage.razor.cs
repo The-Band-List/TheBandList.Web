@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using TheBandList.Web.Entities;
 using TheBandList.Web.Entities.Context;
-using TheBandList.Web.Service;
+using TheBandList.Web.Services;
 using TheBandList.Web.Utils;
 
 namespace TheBandList.Web.Components.Pages
