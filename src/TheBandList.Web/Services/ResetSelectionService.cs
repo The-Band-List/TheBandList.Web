@@ -1,4 +1,4 @@
-﻿namespace TheBandList.Web.Service
+﻿namespace TheBandList.Web.Services
 {
     public class ResetSelectionService
     {

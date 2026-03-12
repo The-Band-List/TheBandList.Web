@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using System.Collections.Concurrent;
 
-namespace TheBandList.Web.Service
+namespace TheBandList.Web.Services
 {
     public class DiscordPresenceService : BackgroundService
     {

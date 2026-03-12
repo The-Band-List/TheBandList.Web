@@ -7,7 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using TheBandList.Web.Auth;
 using TheBandList.Web.Components;
 using TheBandList.Web.Entities.Context;
-using TheBandList.Web.Service;
+using TheBandList.Web.Services;
 using TheBandList.Web.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
